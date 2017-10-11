@@ -1,23 +1,18 @@
 package tests;
 
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
+import model.HubDriver;
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import pages.MainPage;
 
-import java.util.concurrent.TimeUnit;
+import java.net.MalformedURLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class SearchTest {
 
 
-    private WebDriver driver;
-
-
-    @DataProvider
+    @DataProvider(parallel = true)
     private static Object[][] getTestData() {
         return new Object[][] {
                 { "Пенза", "Пензенская область", "Погода в Пензе" },
@@ -26,17 +21,17 @@ public class SearchTest {
     }
 
 
-    @BeforeMethod
-    public void beforeMethod() {
-        driver = new ChromeDriver();
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-        driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
+    @BeforeMethod(alwaysRun = true)
+    void beforeMethod() throws MalformedURLException {
+        System.out.printf("thread[%s] started at %s\n",
+                Thread.currentThread().getId(),
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
     }
 
 
     @Test(dataProvider = "getTestData")
     public void testSearch(String q, String ac, String expectedSearchResult) {
-        String searchResult = new MainPage(driver)
+        String searchResult = new MainPage(HubDriver.get())
                 .closeGeoWidget()
                 .search(q, ac).getPoint();
 
@@ -44,9 +39,12 @@ public class SearchTest {
     }
 
 
-    @AfterMethod
-    public void afterMethod() {
-        driver.quit();
+    @AfterMethod(alwaysRun = true)
+    void afterMethod() {
+        HubDriver.quit();
+        System.out.printf("thread[%s] finished at %s\n",
+                Thread.currentThread().getId(),
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
     }
 
 
